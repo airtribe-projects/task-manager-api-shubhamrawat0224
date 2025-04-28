@@ -9,7 +9,44 @@ function taskID() {
 
 function getTasks(req, res) {
   try {
-    res.status(200).json(tasks);
+    let filteredTasks = [...tasks];
+
+    // Filter by completion status
+    if (req.query.completed !== undefined) {
+      const completed = req.query.completed === "true";
+      filteredTasks = filteredTasks.filter(
+        (task) => task.completed === completed
+      );
+    }
+
+    // Sort by creation date
+    if (req.query.sort === "createdAt") {
+      filteredTasks.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
+    }
+
+    res.status(200).json(filteredTasks);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+function getTasksByPriority(req, res) {
+  try {
+    const { level } = req.params;
+    const validPriorities = ["low", "medium", "high"];
+
+    if (!validPriorities.includes(level.toLowerCase())) {
+      return res.status(400).json({
+        message: "Invalid priority level. Must be low, medium, or high",
+      });
+    }
+
+    const filteredTasks = tasks.filter(
+      (task) => task.priority.toLowerCase() === level.toLowerCase()
+    );
+    res.status(200).json(filteredTasks);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -17,7 +54,7 @@ function getTasks(req, res) {
 
 function createTask(req, res) {
   try {
-    const { title, description, completed } = req.body;
+    const { title, description, completed, priority } = req.body;
 
     if (!title || !description) {
       return res
@@ -25,11 +62,22 @@ function createTask(req, res) {
         .json({ message: "Title and description are required" });
     }
 
+    if (
+      priority &&
+      !["low", "medium", "high"].includes(priority.toLowerCase())
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Priority must be low, medium, or high" });
+    }
+
     const newTask = {
       id: taskID(),
       title,
       description,
       completed: completed || false,
+      priority: priority || "medium",
+      createdAt: new Date().toISOString(),
     };
 
     tasks.push(newTask);
@@ -57,10 +105,19 @@ function getTaskById(req, res) {
 function updateTask(req, res) {
   try {
     const taskId = parseInt(req.params.id);
-    const { title, description, completed } = req.body;
+    const { title, description, completed, priority } = req.body;
 
     if (typeof completed !== "boolean" && completed !== undefined) {
       return res.status(400).json({ message: "Completed must be a boolean" });
+    }
+
+    if (
+      priority &&
+      !["low", "medium", "high"].includes(priority.toLowerCase())
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Priority must be low, medium, or high" });
     }
 
     const taskIndex = tasks.findIndex((t) => t.id === taskId);
@@ -74,6 +131,7 @@ function updateTask(req, res) {
       ...(title !== undefined && { title }),
       ...(description !== undefined && { description }),
       ...(completed !== undefined && { completed }),
+      ...(priority !== undefined && { priority: priority.toLowerCase() }),
     };
 
     tasks[taskIndex] = updatedTask;
@@ -99,4 +157,11 @@ function deleteTask(req, res) {
   }
 }
 
-module.exports = { getTasks, createTask, getTaskById, updateTask, deleteTask };
+module.exports = {
+  getTasks,
+  createTask,
+  getTaskById,
+  updateTask,
+  deleteTask,
+  getTasksByPriority,
+};
