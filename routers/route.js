@@ -7,6 +7,7 @@ let {
   getTaskById,
   updateTask,
   deleteTask,
+  getTasksByPriority,
 } = require("../controllers/controller");
 
 router.get("/", getTasks);
@@ -18,5 +19,7 @@ router.get("/:id", getTaskById);
 router.put("/:id", updateTask);
 
 router.delete("/:id", deleteTask);
+
+router.get("/priority/:level", getTasksByPriority);
 
 module.exports = router;
