@@ -67,7 +67,7 @@ tap.test("PUT /tasks/:id", async (t) => {
   t.end();
 });
 
-tap.test("PUT /tasks/:id with invalid id", async (t) => {
+tap.test("PUT api/v1/tasks/:id with invalid id", async (t) => {
   const updatedTask = {
     title: "Updated Task",
     description: "Updated Task Description",
@@ -84,7 +84,7 @@ tap.test("PUT /tasks/:id with invalid data", async (t) => {
     description: "Updated Task Description",
     completed: "true",
   };
-  const response = await server.put("/tasks/1").send(updatedTask);
+  const response = await server.put("/tasks/2").send(updatedTask);
   t.equal(response.status, 400);
   t.end();
 });
@@ -96,7 +96,7 @@ tap.test("DELETE /tasks/:id", async (t) => {
 });
 
 tap.test("DELETE /tasks/:id with invalid id", async (t) => {
-  const response = await server.delete("/tasks/999");
+  const response = await server.delete("/tasks/50");
   t.equal(response.status, 404);
   t.end();
 });
