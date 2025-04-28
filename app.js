@@ -12,7 +12,7 @@ const loggerMiddleware = require("./middleware/logger");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(loggerMiddleware);
-app.use("/tasks", route);
+app.use("/api/v1/tasks", route);
 
 app.listen(port, (err) => {
   if (err) {
